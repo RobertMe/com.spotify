@@ -1,0 +1,11 @@
+{
+	"open": "free",
+	"free": "free",
+	"premium": "premium",
+	"settings": {
+		"auth": {
+			"authorize": "Log In",
+			"deauthorize": "Log Out"
+		}
+	}
+}

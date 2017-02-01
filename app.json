@@ -1,0 +1,18 @@
+{
+    "id": "com.spotify",
+    "name": {
+        "en": "Spotify"
+    },
+    "version": "1.0.0",
+    "compatibility": ">=1.1",
+    "author": {
+        "name": "Athom B.V.",
+        "email": "info@athom.nl"
+    },
+    "media": [
+        "play",
+        "search",
+        "getPlaylists",
+        "getPlaylist"
+    ]
+}

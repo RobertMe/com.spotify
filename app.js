@@ -326,7 +326,7 @@ function parseTrack(track) {
 			small: (((track.album || {}).images || [])[2] || {}).url,
 		},
 		album: (track.album || {}).name,
-		format: ['spotify:track:id'],
+		codecs: ['spotify:track:id'],
 		confidence: track.popularity,
 	};
 }

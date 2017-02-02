@@ -31,17 +31,18 @@ switch (Homey.manager('i18n').getLanguage()) {
 const playListOwnerMap = new Map();
 function getPlayLists() {
 	return getPlayListsRecursive()
-		.then(items => {
-			return items.map(playlist => {
+		.then(items => Promise.all(
+			items.map(playlist => {
 				playListOwnerMap.set(playlist.id, playlist.owner.id);
-				return {
-					type: 'playlist',
-					id: playlist.id,
-					title: playlist.name,
-					tracks: [],
-				};
-			});
-		});
+				return getPlayListEntriesRecursive(playlist.owner.id, playlist.id)
+					.then(tracks => ({
+						type: 'playlist',
+						id: playlist.id,
+						title: playlist.name,
+						tracks: tracks || [],
+					}));
+			})
+		));
 }
 
 function getPlayList(id) {
@@ -111,6 +112,7 @@ function init() {
 	 * Respond to a search request by returning an array of parsed search results
 	 */
 	Homey.manager('media').on('search', (query, callback) => {
+		console.log('onSearch');
 		/*
 		 * Execute a search using the Google Play Music client.
 		 * Since we are only interested in streamable results we apply filters.
@@ -126,6 +128,7 @@ function init() {
 	 * resource and in what format is wanted for playback.
 	 */
 	Homey.manager('media').on('play', (request, callback) => {
+		console.log('onPlay');
 		console.log('PLAY', request);
 		callback(null, { stream_url: request.trackId });
 		// spotifyApi.getTrack(request.trackId, { market })
@@ -146,7 +149,7 @@ function init() {
 	 * the streaming API (when applicable)
 	 */
 	Homey.manager('media').on('getPlaylists', (data, callback) => {
-
+		console.log('onGetPlaylists');
 		getPlayLists()
 			.then(playLists => {
 				callback(null, playLists);
@@ -158,7 +161,7 @@ function init() {
 	 * Homey might request a specific playlist so it can be refreshed
 	 */
 	Homey.manager('media').on('getPlaylist', (request, callback) => {
-
+		console.log('onGetPlaylist');
 		getPlayList(request.playlistId)
 			.then(playList => {
 				callback(null, playList);
@@ -190,7 +193,11 @@ function startOAuth2(callback) {
 				return console.error(err);
 			}
 
-			authorizeSpotify({ code });
+			authorizeSpotify({ code }, (err, result) => {
+				if (!err) {
+					Homey.manager('media').requestPlaylistUpdate();
+				}
+			});
 		}
 	);
 }
@@ -307,7 +314,6 @@ function getProfile(callback) {
  * @returns {parsedTrack}
  */
 function parseTrack(track) {
-	console.log(track.id);
 	return {
 		type: 'track',
 		id: track.id,
@@ -327,6 +333,7 @@ function parseTrack(track) {
 
 
 function parseTracks(tracks) {
+	console.log('parseTracks');
 	if (!tracks) {
 		return [];
 	}

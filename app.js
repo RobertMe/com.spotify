@@ -111,13 +111,13 @@ function init() {
 	/*
 	 * Respond to a search request by returning an array of parsed search results
 	 */
-	Homey.manager('media').on('search', (query, callback) => {
+	Homey.manager('media').on('search', (queryObject, callback) => {
 		console.log('onSearch');
 		/*
 		 * Execute a search using the Google Play Music client.
 		 * Since we are only interested in streamable results we apply filters.
 		 */
-		spotifyApi.searchTracks(query, { limit: 5, market })
+		spotifyApi.searchTracks(queryObject.searchQuery, { limit: 5, market })
 			.then((data) => callback(null, parseTracks(data.body.tracks.items)))
 			.catch(callback);
 	});

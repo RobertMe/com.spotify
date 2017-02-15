@@ -103,12 +103,6 @@ function init() {
 	authorizeSpotify(null, console.log);
 
 	/*
-	 * Homey needs to know what formats it can request from this media app so whenever this changes the app
-	 * should notify the Homey Media component with the new codecs.
-	 */
-	Homey.manager('media').change({ codecs: ['spotify:track:id'] });
-
-	/*
 	 * Respond to a search request by returning an array of parsed search results
 	 */
 	Homey.manager('media').on('search', (queryObject, callback) => {
@@ -195,7 +189,7 @@ function startOAuth2(callback) {
 
 			authorizeSpotify({ code }, (err, result) => {
 				if (!err) {
-					Homey.manager('media').requestPlaylistUpdate();
+					Homey.manager('media').requestPlaylistsUpdate();
 				}
 			});
 		}
@@ -225,7 +219,7 @@ function authorizeSpotify(credentials, callback) {
 		Homey.manager('settings').set('authorized', true);
 		Homey.manager('api').realtime('authorized', true);
 
-		Homey.manager('media').requestPlaylistUpdate();
+		Homey.manager('media').requestPlaylistsUpdate();
 
 		clearTimeout(authorizationRefreshTimeout);
 		authorizationRefreshTimeout = setTimeout(() => authorizeSpotify, (expiresIn - 600) * 1000);
@@ -274,7 +268,7 @@ function deauthorize(callback) {
 	spotifyApi.resetAccessToken();
 	spotifyApi.resetRefreshToken();
 
-	Homey.manager('media').requestPlaylistUpdate();
+	Homey.manager('media').requestPlaylistsUpdate();
 
 	return callback();
 }

@@ -107,6 +107,9 @@ function init() {
 	 */
 	Homey.manager('media').on('search', (queryObject, callback) => {
 		console.log('onSearch');
+		if (!Homey.manager('settings').get('authorized')) {
+			return callback(new Error(__('error.not_authorized')));
+		}
 		/*
 		 * Execute a search using the Google Play Music client.
 		 * Since we are only interested in streamable results we apply filters.
@@ -122,8 +125,10 @@ function init() {
 	 * resource and in what format is wanted for playback.
 	 */
 	Homey.manager('media').on('play', (request, callback) => {
-		console.log('onPlay');
-		console.log('PLAY', request);
+		console.log('onPlay', request);
+		if (!Homey.manager('settings').get('authorized')) {
+			return callback(new Error(__('error.not_authorized')));
+		}
 		callback(null, { stream_url: request.trackId });
 		// spotifyApi.getTrack(request.trackId, { market })
 		// 	.then((data) => {
@@ -144,6 +149,9 @@ function init() {
 	 */
 	Homey.manager('media').on('getPlaylists', (data, callback) => {
 		console.log('onGetPlaylists');
+		if (!Homey.manager('settings').get('authorized')) {
+			return callback(null, []);
+		}
 		getPlayLists()
 			.then(playLists => {
 				callback(null, playLists);
@@ -156,6 +164,9 @@ function init() {
 	 */
 	Homey.manager('media').on('getPlaylist', (request, callback) => {
 		console.log('onGetPlaylist');
+		if (!Homey.manager('settings').get('authorized')) {
+			return callback(new Error(__('error.not_authorized')));
+		}
 		getPlayList(request.playlistId)
 			.then(playList => {
 				callback(null, playList);
@@ -207,6 +218,8 @@ function authorizeSpotify(credentials, callback) {
 		};
 	}
 
+	clearTimeout(authorizationRefreshTimeout);
+
 	const setAuthorized = (accessToken, refreshToken, expiresIn) => {
 		// set access and refresh tokens
 		spotifyApi.setAccessToken(accessToken);
@@ -221,8 +234,7 @@ function authorizeSpotify(credentials, callback) {
 
 		Homey.manager('media').requestPlaylistsUpdate();
 
-		clearTimeout(authorizationRefreshTimeout);
-		authorizationRefreshTimeout = setTimeout(() => authorizeSpotify, (expiresIn - 600) * 1000);
+		authorizationRefreshTimeout = setTimeout(authorizeSpotify.bind(this), (expiresIn - 600) * 1000);
 
 		console.log('new credentials', spotifyApi.getCredentials());
 
@@ -249,7 +261,7 @@ function authorizeSpotify(credentials, callback) {
 			.catch(callback);
 	} else {
 		console.log('no credentials', credentials);
-		callback(new Error('invalid credentials'));
+		callback(new Error(__('error.invalid_credentials')));
 	}
 }
 
@@ -264,6 +276,8 @@ function deauthorize(callback) {
 	Homey.manager('settings').set('username', undefined);
 	Homey.manager('settings').set('authorized', false);
 	Homey.manager('api').realtime('authorized', false);
+
+	clearTimeout(authorizationRefreshTimeout);
 
 	spotifyApi.resetAccessToken();
 	spotifyApi.resetRefreshToken();
@@ -327,7 +341,6 @@ function parseTrack(track) {
 
 
 function parseTracks(tracks) {
-	console.log('parseTracks');
 	if (!tracks) {
 		return [];
 	}

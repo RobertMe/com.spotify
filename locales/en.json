@@ -7,5 +7,9 @@
 			"authorize": "Log In",
 			"deauthorize": "Log Out"
 		}
+	},
+	"error": {
+		"invalid_credentials": "Invalid credentials given, please try again.",
+		"not_authorized": "You are not logged in. Please check the spotify settings to log in with your account."
 	}
 }

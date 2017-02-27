@@ -3,7 +3,7 @@
 	"name": {
 		"en": "Spotify"
 	},
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"compatibility": ">=1.2.0",
 	"description": "Enables you to play Spotify playlists/tracks to compatible speakers.",
 	"images": {

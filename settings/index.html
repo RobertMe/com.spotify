@@ -58,8 +58,14 @@
 			display: flex;
 		}
 
-		#subscription {
+		#subscription-wrap {
 			position: absolute;
+			left: 0;
+			right: 0;
+			bottom: -3px;
+		}
+		#subscription {
+			display: inline-block;
 		    background: #1ED760;
 		    color: white;
 		    border-radius: 100px;
@@ -68,7 +74,6 @@
 		    text-shadow: 0 1px 1px rgba(0,0,0,0.1);
 		    line-height: 18px;
 			box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-		    margin-top: -5px;
 		}
 
 		#name,
@@ -198,9 +203,11 @@
 				<span id="loading-wrap">
 					<i id="loading" class="fa fa-spinner fa-spin fa-2x fa-fw"></i>
 				</span>
-			</p>
 
-			<span id="subscription"></span>
+				<span id="subscription-wrap">
+					<span id="subscription"></span>
+				</span>
+			</p>
 
 			<p id="metadata">
 				<span id="name"></span>

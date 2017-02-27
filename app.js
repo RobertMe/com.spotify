@@ -353,6 +353,7 @@ function parseTracks(tracks) {
 	}
 
 	return tracks
+		.filter(track => Boolean(track))
 		.sort((a, b) => a.popularity < b.popularity) // sort by match score
 		.map(track => parseTrack(track));
 }

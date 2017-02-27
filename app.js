@@ -140,17 +140,6 @@ function init() {
 			return callback(new Error(__('error.not_authorized')));
 		}
 		callback(null, { stream_url: request.trackId });
-		// spotifyApi.getTrack(request.trackId, { market })
-		// 	.then((data) => {
-		// 		console.log(require('util').inspect(data, { depth: 9 }));
-		// 		callback(null, parseTrack(data.body));
-		// 	})
-		// 	.catch(callback);
-		// pm.getStreamUrl(request.trackId, (err, url) => {
-		// 	if (err) return callback(err);
-		//
-		// 	callback(null, { stream_url: url });
-		// });
 	});
 
 	/*

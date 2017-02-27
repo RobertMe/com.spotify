@@ -1,0 +1,15 @@
+{
+	"open": "gratis",
+	"free": "gratis",
+	"premium": "premium",
+	"settings": {
+		"auth": {
+			"authorize": "Log In",
+			"deauthorize": "Log Uit"
+		}
+	},
+	"error": {
+		"invalid_credentials": "Inloggegevens zijn incorrect. Probeer aub opnieuw.",
+		"not_authorized": "Je bent niet ingelogd. Controleer aub de spotify instellingen om in te loggen."
+	}
+}

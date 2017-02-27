@@ -1,18 +1,26 @@
 {
-    "id": "com.spotify",
-    "name": {
-        "en": "Spotify"
-    },
-    "version": "1.0.0",
-    "compatibility": ">=1.2.0",
-    "author": {
-        "name": "Athom B.V.",
-        "email": "info@athom.nl"
-    },
-    "media": [
-        "play",
-        "search",
-        "getPlaylists",
-        "getPlaylist"
-    ]
+	"id": "com.spotify",
+	"name": {
+		"en": "Spotify"
+	},
+	"version": "1.0.0",
+	"compatibility": ">=1.2.0",
+	"description": "Enables you to play Spotify playlists/tracks to compatible speakers.",
+	"images": {
+		"small": "./assets/images/small.png",
+		"large": "./assets/images/large.png"
+	},
+	"category": [
+		"music"
+	],
+	"author": {
+		"name": "Athom B.V.",
+		"email": "info@athom.nl"
+	},
+	"media": [
+		"play",
+		"search",
+		"getPlaylists",
+		"getPlaylist"
+	]
 }

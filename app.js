@@ -1,5 +1,7 @@
 'use strict';
 
+const logger = require('homey-log').Log;
+
 const SpotifyWebApi = require('spotify-web-api-node');
 const spotifyApi = new SpotifyWebApi({
 	clientId: Homey.env.CLIENT_ID,

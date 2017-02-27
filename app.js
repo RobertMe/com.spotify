@@ -6,6 +6,14 @@ const spotifyApi = new SpotifyWebApi({
 	clientSecret: Homey.env.CLIENT_SECRET,
 	redirectUri: Homey.env.REDIRECT_URI,
 });
+const Queue = require('promise-queue');
+const queue = new Queue(1, Infinity);
+
+const THROTTLE_TIMEOUT = 500;
+const MAX_RETRY_TIMEOUT = 300000;
+let RETRY_TIMEOUT = 5000;
+let retryTimeout;
+let retryCount = 0;
 
 const scopes = [
 	'user-read-private',
@@ -49,39 +57,39 @@ function getPlayList(id) {
 	return Promise.all([
 		spotifyApi.getPlaylist(playListOwnerMap.get(id), id),
 		getPlayListEntriesRecursive(playListOwnerMap.get(id), id),
-	]).then(data => {
-		return {
-			type: 'playlist',
-			id: data[0].body.id,
-			title: data[0].body.name,
-			tracks: data[1],
-		};
-	});
+	]).then(data => ({
+		type: 'playlist',
+		id: data[0].body.id,
+		title: data[0].body.name,
+		tracks: data[1],
+	}));
 }
 
 function getPlayListsRecursive(offset) {
-	return spotifyApi.getUserPlaylists(null, { limit: 50, offset })
-		.then((data) => {
-			if (data.body.next) {
-				return getPlayListsRecursive(data.body.offset + data.body.limit)
-					.then(nextData => {
-						return data.body.items.concat(nextData);
-					});
-			}
-			return data.body.items;
-		});
+	return queue.add(() => spotifyApi.getUserPlaylists(null, { limit: 50, offset })
+		.then(data => new Promise(r => setTimeout(() => r(data), retryCount * THROTTLE_TIMEOUT + THROTTLE_TIMEOUT)))
+	).then((data) => {
+		if (data.body.next) {
+			return getPlayListsRecursive(data.body.offset + data.body.limit)
+				.then(nextData => {
+					return data.body.items.concat(nextData);
+				});
+		}
+		return data.body.items;
+	});
 }
 
 function getPlayListEntriesRecursive(ownerId, playListId, offset) {
-	return spotifyApi.getPlaylistTracks(ownerId, playListId, { limit: 100, offset })
-		.then(data => {
-			const items = parseTracks(data.body.items.map(item => item.track));
-			if (data.body.next) {
-				return getPlayListEntriesRecursive(ownerId, playListId, data.body.offset + data.body.limit)
-					.then(nextItems => items.concat(nextItems));
-			}
-			return items;
-		});
+	return queue.add(spotifyApi.getPlaylistTracks(ownerId, playListId, { limit: 100, offset })
+		.then(data => new Promise(r => setTimeout(() => r(data), retryCount * THROTTLE_TIMEOUT + THROTTLE_TIMEOUT)))
+	).then(data => {
+		const items = parseTracks(data.body.items.map(item => item.track));
+		if (data.body.next) {
+			return getPlayListEntriesRecursive(ownerId, playListId, data.body.offset + data.body.limit)
+				.then(nextItems => items.concat(nextItems));
+		}
+		return items;
+	});
 }
 
 /**
@@ -149,14 +157,21 @@ function init() {
 	 */
 	Homey.manager('media').on('getPlaylists', (data, callback) => {
 		console.log('onGetPlaylists');
+		clearTimeout(retryTimeout);
 		if (!Homey.manager('settings').get('authorized')) {
 			return callback(null, []);
 		}
 		getPlayLists()
 			.then(playLists => {
+				retryCount = 0;
 				callback(null, playLists);
 			})
-			.catch(callback);
+			.catch(err => {
+				retryCount++;
+				retryTimeout = setTimeout(Homey.manager('media').requestPlaylistsUpdate, RETRY_TIMEOUT);
+				RETRY_TIMEOUT = Math.min(RETRY_TIMEOUT * 2, MAX_RETRY_TIMEOUT);
+				callback(err);
+			});
 	});
 
 	/*
@@ -272,8 +287,8 @@ function authorizeSpotify(credentials, callback) {
  * @param callback
  */
 function deauthorize(callback) {
-	Homey.manager('settings').set('credentials', undefined);
-	Homey.manager('settings').set('username', undefined);
+	Homey.manager('settings').unset('credentials');
+	Homey.manager('settings').unset('username');
 	Homey.manager('settings').set('authorized', false);
 	Homey.manager('api').realtime('authorized', false);
 

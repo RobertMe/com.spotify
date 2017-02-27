@@ -18,9 +18,9 @@ let retryCount = 0;
 const scopes = [
 	'user-read-private',
 	'playlist-read-collaborative',
+	'playlist-read-private',
 	'user-top-read',
 	'user-read-email',
-	'user-read-private',
 ];
 const state = 'homey-spotify';
 let market;
@@ -80,7 +80,7 @@ function getPlayListsRecursive(offset) {
 }
 
 function getPlayListEntriesRecursive(ownerId, playListId, offset) {
-	return queue.add(spotifyApi.getPlaylistTracks(ownerId, playListId, { limit: 100, offset })
+	return queue.add(() => spotifyApi.getPlaylistTracks(ownerId, playListId, { limit: 100, offset })
 		.then(data => new Promise(r => setTimeout(() => r(data), retryCount * THROTTLE_TIMEOUT + THROTTLE_TIMEOUT)))
 	).then(data => {
 		const items = parseTracks(data.body.items.map(item => item.track));
@@ -167,6 +167,7 @@ function init() {
 				callback(null, playLists);
 			})
 			.catch(err => {
+				console.log('got playlists err', err);
 				retryCount++;
 				retryTimeout = setTimeout(Homey.manager('media').requestPlaylistsUpdate, RETRY_TIMEOUT);
 				RETRY_TIMEOUT = Math.min(RETRY_TIMEOUT * 2, MAX_RETRY_TIMEOUT);

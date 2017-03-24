@@ -11,6 +11,7 @@ const spotifyApi = new SpotifyWebApi({
 const Queue = require('promise-queue');
 const queue = new Queue(1, Infinity);
 
+const PLAYLIST_REFRESH_TIMEOUT = 60 * 60 * 1000;
 const THROTTLE_TIMEOUT = 500;
 const MAX_RETRY_TIMEOUT = 300000;
 let RETRY_TIMEOUT = 5000;
@@ -147,6 +148,8 @@ function init() {
 	 * the streaming API (when applicable)
 	 */
 	Homey.manager('media').on('getPlaylists', (data, callback) => {
+		clearTimeout(this.playlistRefreshTimeout);
+		this.playlistRefreshTimeout = setTimeout(Homey.manager('media').requestPlaylistsUpdate, PLAYLIST_REFRESH_TIMEOUT);
 		console.log('onGetPlaylists');
 		clearTimeout(retryTimeout);
 		if (!Homey.manager('settings').get('authorized')) {

@@ -1,11 +1,12 @@
 {
 	"id": "com.spotify",
 	"name": {
-		"en": "Spotify for Sonos",
-		"nl": "Spotify voor Sonos"
+		"en": "Spotify",
+		"nl": "Spotify"
 	},
-	"version": "1.0.6",
-	"compatibility": ">=1.2.0",
+	"sdk": 2,
+	"version": "1.1.1",
+	"compatibility": ">=1.5.0",
 	"description": "Enables you to play Spotify playlists/tracks to compatible speakers.",
 	"images": {
 		"small": "./assets/images/small.png",
@@ -23,5 +24,80 @@
 		"search",
 		"getPlaylists",
 		"getPlaylist"
-	]
+	],
+	"drivers": [
+		{
+			"id": "connect_speaker",
+			"name": {
+				"en": "Spotify Connect Speaker",
+				"nl": "Spotify Connect Speaker"
+			},
+			"class": "speaker",
+			"images": {
+				"large": "./assets/drivers/images/large.jpg",
+				"small": "./assets/drivers/images/small.jpg"
+			},
+			"capabilities": [
+				"volume_set",
+				"speaker_playing",
+				"speaker_prev",
+				"speaker_next",
+				"volume_mute"
+			],
+			"pair": [
+				{
+					"id": "list_devices",
+					"template": "list_devices",
+					"navigation": {
+						"next": "add_devices"
+					}
+				},
+				{
+					"id": "add_devices",
+					"template": "add_devices"
+				}
+			]
+		}
+	],
+	"flow": {
+		"actions": [
+			{
+				"id": "transfer_playback",
+				"title": {
+					"en": "Tranfer Playback",
+					"nl": "Verander Afspeelapparaat"
+				},
+				"args": [
+					{
+						"name": "device",
+						"type": "device",
+						"filter": "driver_id=connect_speaker"
+					}
+				]
+			}
+		],
+		"conditions": [
+			{
+				"id": "is_playing",
+				"title": {
+					"en": "Is playing a track",
+					"nl": "Is aan het afspelen"
+				},
+				"args": [
+					{
+						"name": "device",
+						"type": "device",
+						"filter": "driver_id=connect_speaker"
+					}
+				]
+			},
+			{
+				"id": "spotify_is_playing",
+				"title": {
+					"en": "A track is playing",
+					"nl": "Er wordt muziek afgespeeld"
+				}
+			}
+		]
+	}
 }

@@ -1,8 +1,9 @@
 <!doctype html>
 <html>
-	<head>
+<head>
+	<script type="text/javascript" src="/homey.js" data-origin="settings"></script>
 
-		<style type="text/css">
+	<style type="text/css">
 		body {
 			display: flex;
 			flex-direction: column;
@@ -33,10 +34,11 @@
 			background-position: center center;
 
 			border: 1px solid #eee;
-			box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 
 			cursor: default;
 		}
+
 		body.authorized #avatar {
 			cursor: pointer;
 		}
@@ -49,11 +51,12 @@
 			bottom: 0;
 			color: #aaa;
 
-		    align-items: center;
-		    justify-content: center;
+			align-items: center;
+			justify-content: center;
 
-		    display: none;
+			display: none;
 		}
+
 		body.loading #loading-wrap {
 			display: flex;
 		}
@@ -64,25 +67,28 @@
 			right: 0;
 			bottom: -3px;
 		}
+
 		#subscription {
 			display: inline-block;
-		    background: #1ED760;
-		    color: white;
-		    border-radius: 100px;
-		    font-size: 11px;
-		    padding: 0 0.4em;
-		    text-shadow: 0 1px 1px rgba(0,0,0,0.1);
-		    line-height: 18px;
-			box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+			background: #1ED760;
+			color: white;
+			border-radius: 100px;
+			font-size: 11px;
+			padding: 0 0.4em;
+			text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+			line-height: 18px;
+			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 		}
 
 		#name,
 		#email {
 			display: block;
 		}
+
 		#name {
 			font-weight: 400;
 		}
+
 		#email {
 			font-style: italic;
 		}
@@ -93,138 +99,140 @@
 		body:not(.authorized) #subscription {
 			display: none;
 		}
-		</style>
+	</style>
 
-		<script type="text/javascript">
-		var bodyEl;
-		var avatarEl;
-		var nameEl;
-		var emailEl;
-		var subscriptionEl;
-		var authorizeEl;
-		var deauthorizeEl;
+	<script type="text/javascript">
+			var Homey;
+			var bodyEl;
+			var avatarEl;
+			var nameEl;
+			var emailEl;
+			var subscriptionEl;
+			var authorizeEl;
+			var deauthorizeEl;
 
-		window.addEventListener('load', function(){
+			window.addEventListener('load', function () {
 
-			bodyEl = document.body;
-			avatarEl = document.getElementById('avatar');
-			nameEl = document.getElementById('name');
-			emailEl = document.getElementById('email');
-			subscriptionEl = document.getElementById('subscription');
-			authorizeEl = document.getElementById('authorize');
-			deauthorizeEl = document.getElementById('deauthorize');
+				bodyEl = document.body;
+				avatarEl = document.getElementById('avatar');
+				nameEl = document.getElementById('name');
+				emailEl = document.getElementById('email');
+				subscriptionEl = document.getElementById('subscription');
+				authorizeEl = document.getElementById('authorize');
+				deauthorizeEl = document.getElementById('deauthorize');
 
-			authorizeEl.addEventListener('click', authorize);
-			deauthorizeEl.addEventListener('click', deauthorize);
-		});
-
-		function onHomeyReady() {
-			Homey.get('authorized', function (err, result) {
-				if( err ) {
-					setAuthorizationState( false );
-				} else {
-					setAuthorizationState(result);
-				}
-
-				Homey.ready();
+				authorizeEl.addEventListener('click', authorize);
+				deauthorizeEl.addEventListener('click', deauthorize);
 			});
 
-			Homey.on('authorized', setAuthorizationState);
-		}
-
-		function authorize() {
-			Homey.api('GET', '/oauth2', function(err, url) {
-				if( err ) {
-					console.log('authorize err', err);
-					return error( __('settings.error.invalid_credentials') );
-				}
-
-				Homey.popup(url);
-			});
-		}
-
-		function deauthorize() {
-			Homey.api('POST', '/deauthorize', function(err, result) {
-				if( err ) {
-					console.log('deauthorize err', err);
-					error( err );
-				}
-
-				setAuthorizationState(false);
-			});
-		}
-
-		function setAuthorizationState(authorized) {
-
-			bodyEl.classList.toggle('authorized', authorized);
-
-			if( authorized ) {
-
-				bodyEl.classList.add('loading');
-
-				Homey.api('GET', '/profile', function(err, profile) {
-					if( err ) return error( err );
-
-					bodyEl.classList.remove('loading');
-
-					if( profile.images
-					 && profile.images[0]
-					 && profile.images[0].url ) {
-					 	avatarEl.style.backgroundImage = 'url(' + profile.images[0].url + ')'
+			function onHomeyReady(HomeyInstance) {
+				Homey = HomeyInstance;
+				Homey.get('authorized', function (err, result) {
+					if (err) {
+						setAuthorizationState(false);
 					} else {
-						avatarEl.style.backgroundImage = 'url(img/default.png)';
+						setAuthorizationState(result);
 					}
 
-					avatarEl.href = 'https://www.spotify.com/account/';
-
-					nameEl.textContent = profile.display_name || profile.id;
-					emailEl.textContent = profile.email;
-					subscriptionEl.textContent = __(profile.product);
+					Homey.ready();
 				});
-			} else {
-				avatarEl.style.backgroundImage = 'url(img/default.png)';
-				avatarEl.href = 'javascript:void(0);';
+
+				Homey.on('authorized', setAuthorizationState);
 			}
-		}
 
-		function error( err ) {
-			Homey.alert( err.message || err.toString(), 'error');
-		}
-		</script>
+			function authorize() {
+				Homey.api('GET', '/oauth2', function (err, url) {
+					if (err) {
+						console.log('authorize err', err);
+						return error(__('settings.error.invalid_credentials'));
+					}
 
-	</head>
-	<body>
+					Homey.popup(url);
+				});
+			}
 
-		<div id="content">
+			function deauthorize() {
+				Homey.api('POST', '/deauthorize', function (err, result) {
+					if (err) {
+						console.log('deauthorize err', err);
+						error(err);
+					}
 
-			<p class="relative">
-				<a id="avatar" target="_blank" href="javascript:void(0);"></a>
+					setAuthorizationState(false);
+				});
+			}
 
-				<span id="loading-wrap">
+			function setAuthorizationState(authorized) {
+
+				bodyEl.classList.toggle('authorized', authorized);
+
+				if (authorized) {
+
+					bodyEl.classList.add('loading');
+
+					Homey.api('GET', '/profile', function (err, profile) {
+						if (err) return error(err);
+
+						bodyEl.classList.remove('loading');
+
+						if (profile.images
+							&& profile.images[0]
+							&& profile.images[0].url) {
+							avatarEl.style.backgroundImage = 'url(' + profile.images[0].url + ')'
+						} else {
+							avatarEl.style.backgroundImage = 'url(img/default.png)';
+						}
+
+						avatarEl.href = 'https://www.spotify.com/account/';
+
+						nameEl.textContent = profile.display_name || profile.id;
+						emailEl.textContent = profile.email;
+						subscriptionEl.textContent = __(profile.product);
+					});
+				} else {
+					avatarEl.style.backgroundImage = 'url(img/default.png)';
+					avatarEl.href = 'javascript:void(0);';
+				}
+			}
+
+			function error(err) {
+				Homey.alert(err.message || err.toString(), 'error');
+			}
+	</script>
+
+</head>
+<body>
+
+<div id="content">
+
+	<p class="relative">
+		<a id="avatar" target="_blank" href="javascript:void(0);"></a>
+
+		<span id="loading-wrap">
 					<i id="loading" class="fa fa-spinner fa-spin fa-2x fa-fw"></i>
 				</span>
 
-				<span id="subscription-wrap">
+		<span id="subscription-wrap">
 					<span id="subscription"></span>
 				</span>
-			</p>
+	</p>
 
-			<p id="metadata">
-				<span id="name"></span>
-				<span id="email"></span>
-			</p>
+	<p id="metadata">
+		<span id="name"></span>
+		<span id="email"></span>
+	</p>
 
-			<button id="authorize">
-				<i class="fa fa-sign-in" aria-hidden="true"></i>
-				<span data-i18n="settings.auth.authorize"></span>
-			</button>
+	<button id="authorize">
+		<i class="fa fa-sign-in" aria-hidden="true"></i>
+		<span data-i18n="settings.auth.authorize"></span>
+	</button>
 
-			<button id="deauthorize">
-				<i class="fa fa-sign-out" aria-hidden="true"></i>
-				<span data-i18n="settings.auth.deauthorize"></span>
-			</button>
+	<button id="deauthorize">
+		<i class="fa fa-sign-out" aria-hidden="true"></i>
+		<span data-i18n="settings.auth.deauthorize"></span>
+	</button>
 
-		</div>
+</div>
 
-	</body>
+</body>
 </html>

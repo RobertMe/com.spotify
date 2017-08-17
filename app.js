@@ -121,7 +121,7 @@ module.exports = class App extends Homey.App {
 					callback(null, playLists);
 				})
 				.catch(err => {
-					this.err('got playlists err', err);
+					this.error('got playlists err', err);
 					retryCount++;
 					retryTimeout = setTimeout(() => Homey.ManagerMedia.requestPlaylistsUpdate(), RETRY_TIMEOUT);
 					RETRY_TIMEOUT = Math.min(RETRY_TIMEOUT * 2, MAX_RETRY_TIMEOUT);

@@ -107,7 +107,6 @@ module.exports = class App extends Homey.App {
 		 * the streaming API (when applicable)
 		 */
 		Homey.ManagerMedia.on('getPlaylists', (callback) => {
-			console.log('getplaylistss', callback);
 			clearTimeout(retryTimeout);
 			clearTimeout(this.playlistRefreshTimeout);
 			this.playlistRefreshTimeout = setTimeout(
@@ -117,15 +116,12 @@ module.exports = class App extends Homey.App {
 			if (!Homey.ManagerSettings.get('authorized')) {
 				return callback(null, []);
 			}
-			console.log('GETPLAYLISTS');
 			this.getPlayLists()
 				.then(playLists => {
-					console.log('GETPLAYLIST THEN');
 					retryCount = 0;
 					callback(null, playLists);
 				})
 				.catch(err => {
-					console.log('GTEPLAYLISTS CATCH', err)
 					this.error('got playlists err', err);
 					retryCount++;
 					retryTimeout = setTimeout(() => Homey.ManagerMedia.requestPlaylistsUpdate(), RETRY_TIMEOUT);
@@ -164,24 +160,24 @@ module.exports = class App extends Homey.App {
 	}
 
 	getPlayLists() {
-		console.log('getPlaylists!');
 		return this.getPlayListsRecursive()
 			.then(items => {
 				return Promise.all(
 					items.map(playlist => {
 						this.setPlaylistOwner(playlist.id, playlist.owner.id);
-						return {
-							type: 'playlist',
-							id: playlist.id,
-							title: playlist.name,
-						};
+						return this.getPlayList(playlist.id);
+						// TODO: enable when getPlaylists accepts empty playlists and requests the playlists one by one
+						// return {
+						// 	type: 'playlist',
+						// 	id: playlist.id,
+						// 	title: playlist.name,
+						// };
 					})
 				);
 			});
 	}
 
 	getPlayList(id) {
-		console.log('getPlaylist', id);
 		return Promise.all([
 			this.queue.add(() => this.spotifyApi.getPlaylist(this.getPlaylistOwner(id), id)),
 			this.getPlayListEntriesRecursive(this.getPlaylistOwner(id), id),

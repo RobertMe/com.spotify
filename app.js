@@ -62,6 +62,7 @@ module.exports = class App extends Homey.App {
 		 */
 		Homey.ManagerSettings.set('authorized', false);
 		Homey.ManagerApi.realtime('authorized', false);
+		this.emit('authenticated', false);
 
 		this.authorizeSpotify(null, console.log);
 
@@ -77,7 +78,7 @@ module.exports = class App extends Homey.App {
 		 * Respond to a search request by returning an array of parsed search results
 		 */
 		Homey.ManagerMedia.on('search', (queryObject, callback) => {
-			if (!Homey.ManagerMedia.get('authorized')) {
+			if (!Homey.ManagerSettings.get('authorized')) {
 				return callback(new Error(Homey.__('error.not_authorized')));
 			}
 			/*
@@ -106,6 +107,7 @@ module.exports = class App extends Homey.App {
 		 * the streaming API (when applicable)
 		 */
 		Homey.ManagerMedia.on('getPlaylists', (callback) => {
+			console.log('getplaylistss', callback);
 			clearTimeout(retryTimeout);
 			clearTimeout(this.playlistRefreshTimeout);
 			this.playlistRefreshTimeout = setTimeout(
@@ -115,12 +117,15 @@ module.exports = class App extends Homey.App {
 			if (!Homey.ManagerSettings.get('authorized')) {
 				return callback(null, []);
 			}
+			console.log('GETPLAYLISTS');
 			this.getPlayLists()
 				.then(playLists => {
+					console.log('GETPLAYLIST THEN');
 					retryCount = 0;
 					callback(null, playLists);
 				})
 				.catch(err => {
+					console.log('GTEPLAYLISTS CATCH', err)
 					this.error('got playlists err', err);
 					retryCount++;
 					retryTimeout = setTimeout(() => Homey.ManagerMedia.requestPlaylistsUpdate(), RETRY_TIMEOUT);
@@ -159,26 +164,24 @@ module.exports = class App extends Homey.App {
 	}
 
 	getPlayLists() {
+		console.log('getPlaylists!');
 		return this.getPlayListsRecursive()
 			.then(items => {
 				return Promise.all(
 					items.map(playlist => {
 						this.setPlaylistOwner(playlist.id, playlist.owner.id);
-						return this.getPlayListEntriesRecursive(playlist.owner.id, playlist.id)
-							.then(tracks => {
-								return {
-									type: 'playlist',
-									id: playlist.id,
-									title: playlist.name,
-									tracks: tracks || [],
-								}
-							});
+						return {
+							type: 'playlist',
+							id: playlist.id,
+							title: playlist.name,
+						};
 					})
 				);
 			});
 	}
 
 	getPlayList(id) {
+		console.log('getPlaylist', id);
 		return Promise.all([
 			this.queue.add(() => this.spotifyApi.getPlaylist(this.getPlaylistOwner(id), id)),
 			this.getPlayListEntriesRecursive(this.getPlaylistOwner(id), id),
@@ -311,6 +314,7 @@ module.exports = class App extends Homey.App {
 		Homey.ManagerSettings.unset('username');
 		Homey.ManagerSettings.set('authorized', false);
 		Homey.ManagerApi.realtime('authorized', false);
+		this.emit('authenticated', false);
 
 		clearTimeout(this.authorizationRefreshTimeout);
 
@@ -394,7 +398,7 @@ module.exports = class App extends Homey.App {
 		if (!this.isAuthenticated()) return Promise.reject(new Error('not_authenticated'));
 		if (forceUpdate || !this.getMyDevicesCache) {
 			this.getMyDevicesCache = this.queue.add(() => this.spotifyApi.getMyDevices())
-				.then(result => result.body.devices);
+				.then(result => result.body.devices || []);
 			clearTimeout(this.myDevicesCacheTimeout);
 			this.myDevicesCacheTimeout = setTimeout(() => this.getMyDevicesCache = null, 3000);
 		}

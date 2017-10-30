@@ -13,6 +13,7 @@ module.exports = class ConnectSpeakerDriver extends Homey.Driver {
 
 		Homey.app.getMyDevices()
 			.then(devices => {
+				console.log('devices', devices);
 				callback(null, devices.map(device => ({
 					name: device.name,
 					data: {
@@ -36,6 +37,25 @@ module.exports = class ConnectSpeakerDriver extends Homey.Driver {
 					.catch(() => false)
 			);
 
+	}
+
+	onPair(socket) {
+		super.onPair(socket);
+
+		socket.on('authorized', (data, callback) => {
+			callback(null, Homey.app.isAuthenticated());
+		});
+
+		const onAuthenticated = (isAuthenticated) => socket.emit('authorized', isAuthenticated);
+		Homey.app.on('authenticated', onAuthenticated);
+
+		socket.on('disconnect', () => {
+			Homey.app.removeListener('authenticated', onAuthenticated);
+		});
+
+		socket.on('oauth2', (data, callback) => {
+			Homey.app.startOAuth2(callback);
+		});
 	}
 
 };

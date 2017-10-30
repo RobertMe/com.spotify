@@ -1,0 +1,185 @@
+<!doctype html>
+<html>
+<head>
+
+	<style type="text/css">
+		body {
+			display: flex;
+			flex-direction: column;
+		}
+
+		.relative {
+			position: relative;
+		}
+
+		[data-id="authorize"] .view-content {
+			display: flex;
+		}
+
+		#content {
+			display: flex;
+			flex-grow: 1;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			text-align: center;
+			margin-bottom: 10%;
+		}
+
+		#avatar {
+			display: block;
+
+			width: 100px;
+			height: 100px;
+			border-radius: 100px;
+
+			background-repeat: no-repeat;
+			background-size: cover;
+			background-position: center center;
+
+			border: 1px solid #eee;
+			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+			cursor: default;
+		}
+
+		body.authorized #avatar {
+			cursor: pointer;
+		}
+
+		#loading-wrap {
+			position: absolute;
+			left: 0;
+			right: 0;
+			top: 0;
+			bottom: 0;
+			color: #aaa;
+
+			align-items: center;
+			justify-content: center;
+
+			display: none;
+		}
+
+		body.loading #loading-wrap {
+			display: flex;
+		}
+
+		#subscription-wrap {
+			position: absolute;
+			left: 0;
+			right: 0;
+			bottom: -3px;
+		}
+
+		#subscription {
+			display: inline-block;
+			background: #1ED760;
+			color: white;
+			border-radius: 100px;
+			font-size: 11px;
+			padding: 0 0.4em;
+			text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+			line-height: 18px;
+			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+		}
+
+		#name,
+		#email {
+			display: block;
+		}
+
+		#name {
+			font-weight: 400;
+		}
+
+		#email {
+			font-style: italic;
+		}
+
+		body.authorized #authorize,
+		body:not(.authorized) #deauthorize,
+		body:not(.authorized) #metadata,
+		body:not(.authorized) #subscription {
+			display: none;
+		}
+	</style>
+
+	<script type="text/javascript">
+			var bodyEl = document.body;
+			var avatarEl = document.getElementById('avatar');
+			var authorizeEl = document.getElementById('authorize');
+
+
+			authorizeEl.addEventListener('click', authorize);
+			Homey.setTitle(__('pair.login'));
+
+			Homey.emit('authorized', function (err, result) {
+				if (err) {
+					setAuthorizationState(false);
+				} else {
+					setAuthorizationState(result);
+				}
+			});
+
+			Homey.on('authorized', setAuthorizationState);
+
+			function authorize() {
+				Homey.emit('oauth2', function (err, url) {
+					if (err) {
+						console.log('authorize err', err);
+						return error(__('settings.error.invalid_credentials'));
+					}
+
+					Homey.popup(url);
+				});
+			}
+
+			function setAuthorizationState(authorized) {
+
+				bodyEl.classList.toggle('authorized', authorized);
+
+				if (authorized) {
+					Homey.showView('list_devices');
+				} else {
+					avatarEl.style.backgroundImage = 'url(img/default.png)';
+					avatarEl.href = 'javascript:void(0);';
+				}
+			}
+
+			function error(err) {
+				Homey.alert(err.message || err.toString(), 'error');
+			}
+	</script>
+
+</head>
+<body>
+
+<div id="content">
+
+	<p class="relative">
+		<a id="avatar" target="_blank" href="javascript:void(0);"></a>
+
+		<span id="loading-wrap">
+					<i id="loading" class="fa fa-spinner fa-spin fa-2x fa-fw"></i>
+				</span>
+
+		<span id="subscription-wrap">
+					<span id="subscription"></span>
+				</span>
+	</p>
+
+	<p id="metadata">
+		<span id="name"></span>
+		<span id="email"></span>
+	</p>
+
+	<button id="authorize">
+		<i class="fa fa-sign-in" aria-hidden="true"></i>
+		<span data-i18n="settings.auth.authorize"></span>
+	</button>
+
+</div>
+
+</body>
+</html>

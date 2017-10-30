@@ -1,4 +1,7 @@
 {
+	"pair": {
+		"login": "Login to your Spotify account to continue."
+	},
 	"open": "free",
 	"free": "free",
 	"premium": "premium",

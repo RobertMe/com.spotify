@@ -3,7 +3,7 @@
 const Homey = require('homey');
 const logger = require('homey-log').Log;
 
-const SpotifyWebApi = require('spotify-web-api-node');
+const SpotifyWebApi = require('./lib/spotify-web-api-node');
 const Queue = require('promise-queue');
 
 const UPDATE_STATE_TIMEOUT = 30000;
@@ -228,7 +228,7 @@ module.exports = class App extends Homey.App {
 		new Homey.CloudOAuth2Callback(
 			// if the external oauth server requires an Authorization callback URL set it to https://callback.athom.com/oauth2/callback/
 			// this is the app-specific authorize url
-			this.spotifyApi.createAuthorizeURL(scopes, state)
+			this.spotifyApi.createAuthorizeURL(scopes, state, true)
 		)
 			.on('url', url => callback(null, url))
 			.on('code', code => this.authorizeSpotify({ code }, (err) => {

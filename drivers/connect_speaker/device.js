@@ -13,13 +13,13 @@ module.exports = class ConnectSpeakerDevice extends Homey.Device {
 				});
 		};
 
+		Homey.app.on('authenticated', () => this.api = Homey.app.getApi());
 		if (!Homey.app.authenticated) {
 			this.setUnavailable();
 			Homey.app.once('authenticated', initSpeaker);
 		} else {
 			initSpeaker();
 		}
-		this.api = Homey.app.getApi();
 
 		this.registerCapabilityListener('volume_set', this.wrapCapabilityListener.bind(this, this.setPlaybackVolume));
 		this.registerCapabilityListener('volume_mute', this.wrapCapabilityListener.bind(this, this.setVolumeMute));

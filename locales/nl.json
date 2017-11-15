@@ -1,6 +1,7 @@
 {
 	"pair": {
-		"login": "Log in op je Spotify account om verder te gaan."
+		"login": "Log in op je Spotify account om verder te gaan.",
+		"loading": "Lijst van apparaten ophalen..."
 	},
 	"open": "gratis",
 	"free": "gratis",

@@ -140,6 +140,7 @@
 				bodyEl.classList.toggle('authorized', authorized);
 
 				if (authorized) {
+					Homey.setTitle(__('pair.loading'));
 					Homey.showView('list_devices');
 				} else {
 					avatarEl.style.backgroundImage = 'url(img/default.png)';

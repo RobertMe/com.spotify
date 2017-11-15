@@ -1,6 +1,7 @@
 {
 	"pair": {
-		"login": "Login to your Spotify account to continue."
+		"login": "Login to your Spotify account to continue.",
+		"loading": "Loading device list..."
 	},
 	"open": "free",
 	"free": "free",

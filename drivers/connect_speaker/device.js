@@ -13,6 +13,7 @@ module.exports = class ConnectSpeakerDevice extends Homey.Device {
 				});
 		};
 
+		this.api = Homey.app.getApi();
 		Homey.app.on('authenticated', () => this.api = Homey.app.getApi());
 		if (!Homey.app.authenticated) {
 			this.setUnavailable();

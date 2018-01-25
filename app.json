@@ -1,8 +1,8 @@
 {
 	"id": "com.spotify",
 	"name": {
-		"en": "Spotify for Spotify Connect",
-		"nl": "Spotify voor Spotify Connect"
+		"en": "Spotify Connect",
+		"nl": "Spotify Connect"
 	},
 	"sdk": 2,
 	"version": "1.1.5",

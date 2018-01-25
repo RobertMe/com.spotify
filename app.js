@@ -111,7 +111,7 @@ module.exports = class App extends Homey.App {
 			clearTimeout(this.playlistRefreshTimeout);
 			this.playlistRefreshTimeout = setTimeout(
 				() => Homey.ManagerMedia.requestPlaylistsUpdate(),
-				PLAYLIST_REFRESH_TIMEOUT
+				(Math.random() + 1) * PLAYLIST_REFRESH_TIMEOUT
 			);
 			if (!Homey.ManagerSettings.get('authorized')) {
 				return callback(null, []);

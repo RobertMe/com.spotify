@@ -99,6 +99,23 @@
 		body:not(.authorized) #subscription {
 			display: none;
 		}
+
+		#api-key-toggle {
+			position: absolute;
+			bottom: 5px;
+			right: 15px;
+			width: 15px;
+			height: 15px;
+			border-radius: 15px;
+			border: 1px solid grey;
+			text-align: center;
+			font-size: 10px;
+			line-height: 15px;
+		}
+
+		#api-key-toggle:hover {
+			background: darkgrey;
+		}
 	</style>
 
 	<script type="text/javascript">
@@ -110,6 +127,11 @@
 			var subscriptionEl;
 			var authorizeEl;
 			var deauthorizeEl;
+			var loginEl;
+			var loginContainer;
+			var apiKeyContainer;
+			var apiKeyToggleEl;
+			var apiSaveEl;
 
 			window.addEventListener('load', function () {
 
@@ -120,9 +142,16 @@
 				subscriptionEl = document.getElementById('subscription');
 				authorizeEl = document.getElementById('authorize');
 				deauthorizeEl = document.getElementById('deauthorize');
+				loginEl = document.getElementById('login');
+				loginContainer = document.getElementById('login-container');
+				apiKeyContainer = document.getElementById('api-key-container');
+				apiKeyToggleEl = document.getElementById('api-key-toggle');
+				apiSaveEl = document.getElementById('api-settings-save');
 
 				authorizeEl.addEventListener('click', authorize);
 				deauthorizeEl.addEventListener('click', deauthorize);
+				apiKeyToggleEl.addEventListener('click', toggleApiSettings);
+				apiSaveEl.addEventListener('click', saveApiSettings);
 			});
 
 			function onHomeyReady(HomeyInstance) {
@@ -195,6 +224,21 @@
 				}
 			}
 
+
+			function toggleApiSettings() {
+				if (apiKeyContainer.style.display === 'none') {
+					loginContainer.style.display = 'none';
+					apiKeyContainer.style.display = 'block';
+				} else {
+					loginContainer.style.display = 'block';
+					apiKeyContainer.style.display = 'none';
+				}
+			}
+
+			function saveApiSettings() {
+
+			}
+
 			function error(err) {
 				Homey.alert(err.message || err.toString(), 'error');
 			}
@@ -204,35 +248,46 @@
 <body>
 
 <div id="content">
+	<div id="login-container">
+		<p class="relative">
+			<a id="avatar" target="_blank" href="javascript:void(0);"></a>
 
-	<p class="relative">
-		<a id="avatar" target="_blank" href="javascript:void(0);"></a>
-
-		<span id="loading-wrap">
+			<span id="loading-wrap">
 					<i id="loading" class="fa fa-spinner fa-spin fa-2x fa-fw"></i>
 				</span>
 
-		<span id="subscription-wrap">
+			<span id="subscription-wrap">
 					<span id="subscription"></span>
 				</span>
-	</p>
+		</p>
 
-	<p id="metadata">
-		<span id="name"></span>
-		<span id="email"></span>
-	</p>
+		<p id="metadata">
+			<span id="name"></span>
+			<span id="email"></span>
+		</p>
 
-	<button id="authorize">
-		<i class="fa fa-sign-in" aria-hidden="true"></i>
-		<span data-i18n="settings.auth.authorize"></span>
-	</button>
+		<button id="authorize">
+			<i class="fa fa-sign-in" aria-hidden="true"></i>
+			<span data-i18n="settings.auth.authorize"></span>
+		</button>
 
-	<button id="deauthorize">
-		<i class="fa fa-sign-out" aria-hidden="true"></i>
-		<span data-i18n="settings.auth.deauthorize"></span>
-	</button>
-
+		<button id="deauthorize">
+			<i class="fa fa-sign-out" aria-hidden="true"></i>
+			<span data-i18n="settings.auth.deauthorize"></span>
+		</button>
+	</div>
+	<div id="api-key-container" style="display:none">
+		<p>
+			<span data-i18n="settings.api.own_risk"></span>
+			<span data-i18n="settings.api.instructions"></span>
+		</p>
+		<div id="api-settings">
+			<input id="client-id" type="text" class="credentials" placeholder="Api Key"/>
+			<input id="client-secret" type="text" class="credentials" placeholder="Api Password"/>
+		</div>
+		<button id="api-settings-save" data-i18n="settings.api.save"></button>
+	</div>
 </div>
-
+<p id="api-key-toggle"><i class="fa fa-key" aria-hidden="true"></i></p>
 </body>
 </html>

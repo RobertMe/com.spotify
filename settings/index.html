@@ -94,10 +94,17 @@
 		}
 
 		body.authorized #authorize,
+		body.authorized .if-unauthorized,
 		body:not(.authorized) #deauthorize,
 		body:not(.authorized) #metadata,
-		body:not(.authorized) #subscription {
+		body:not(.authorized) #subscription,
+		body:not(.authorized) .if-authorized {
 			display: none;
+		}
+
+		.authorize-help {
+			max-width: 80%;
+			padding-top: 1em;
 		}
 
 		#api-key-toggle {
@@ -276,7 +283,8 @@
 			<span data-i18n="settings.auth.deauthorize"></span>
 		</button>
 	</div>
-	<div id="api-key-container" style="display:none">
+	<span data-i18n="settings.auth.authorize_help" class="if-unauthorized authorize-help"></span>
+	<!--<div id="api-key-container" style="display:none">
 		<p>
 			<span data-i18n="settings.api.own_risk"></span>
 			<span data-i18n="settings.api.instructions"></span>
@@ -286,8 +294,8 @@
 			<input id="client-secret" type="text" class="credentials" placeholder="Api Password"/>
 		</div>
 		<button id="api-settings-save" data-i18n="settings.api.save"></button>
-	</div>
+	</div>-->
 </div>
-<p id="api-key-toggle"><i class="fa fa-key" aria-hidden="true"></i></p>
+<!--<p id="api-key-toggle"><i class="fa fa-key" aria-hidden="true"></i></p>-->
 </body>
 </html>

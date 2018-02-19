@@ -16,7 +16,7 @@ module.exports = class ConnectSpeakerDevice extends Homey.Device {
 		this.api = Homey.app.getApi();
 		Homey.app.on('authenticated', () => this.api = Homey.app.getApi());
 		if (!Homey.app.authenticated) {
-			this.setUnavailable();
+			this.setUnavailable(Homey.__('error.unavailable'));
 			Homey.app.once('authenticated', initSpeaker);
 		} else {
 			initSpeaker();
@@ -177,7 +177,11 @@ module.exports = class ConnectSpeakerDevice extends Homey.Device {
 			})
 			.catch(err => {
 				this.log('updateState Error:', err);
-				this.setUnavailable(Homey.__('device_not_found'));
+				if (Homey.app.isAuthenticated()) {
+					this.setUnavailable(Homey.__('error.device_not_found'));
+				} else {
+					this.setUnavailable(Homey.__('error.unavailable'));
+				}
 			});
 	}
 

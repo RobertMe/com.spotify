@@ -9,11 +9,14 @@
 	"settings": {
 		"auth": {
 			"authorize": "Log In",
-			"deauthorize": "Log Out"
+			"deauthorize": "Log Out",
+			"authorize_help": "After clicking the \"Log In\" button a popup should appear where you can log in. If this does not happen your browser blocks pupups, please check the url bar to allow popups and try again."
 		}
 	},
 	"error": {
 		"invalid_credentials": "Invalid credentials given, please try again.",
-		"not_authorized": "You are not logged in. Please check the spotify settings to log in with your account."
+		"not_authorized": "You are not logged in. Please check the spotify settings to log in with your account.",
+		"unavailable": "Could not connect to this device. If this problem persists try restarting Homey/this app or deleting this device and pairing it again.",
+		"device_not_found": "Device was not found for logged in account. Please check if the device is online and the logged in account is correct."
 	}
 }

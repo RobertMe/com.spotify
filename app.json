@@ -5,7 +5,7 @@
 		"nl": "Spotify Connect"
 	},
 	"sdk": 2,
-	"version": "1.1.5",
+	"version": "2.0.0",
 	"compatibility": ">=1.5.0",
 	"description": "Enables you to play Spotify playlists/tracks to compatible speakers.",
 	"images": {

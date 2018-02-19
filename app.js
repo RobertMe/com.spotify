@@ -7,9 +7,10 @@ const SpotifyWebApi = require('./lib/spotify-web-api-node');
 const Queue = require('promise-queue');
 
 const UPDATE_STATE_TIMEOUT = 30000;
-const PLAYLIST_REFRESH_TIMEOUT = 60 * 60 * 1000;
+const PLAYLIST_REFRESH_TIMEOUT = 24 * 60 * 60 * 1000;
 const THROTTLE_TIMEOUT = 500;
 const MAX_RETRY_TIMEOUT = 300000;
+const AUTH_RETRY_TIMEOUT = 10000;
 let RETRY_TIMEOUT = 5000;
 let retryTimeout;
 let retryCount = 0;
@@ -64,14 +65,22 @@ module.exports = class App extends Homey.App {
 		Homey.ManagerApi.realtime('authorized', false);
 		this.emit('authenticated', false);
 
-		this.authorizeSpotify(null, console.log);
+		// Set Authentication retry counter.
+		this.authRetries = 0;
+		this.on('authenticated', (isAuthenticated) => {
+			if (isAuthenticated) {
+				this.authRetries = 0;
+			}
+		});
+
+		this.authorizeSpotify()
+			.catch(this.error);
 
 		new Homey.FlowCardCondition('spotify_is_playing')
 			.register()
 			.registerRunListener(() =>
 				this.queue.add(() => this.spotifyApi.getMyCurrentPlaybackState())
 					.then(result => result.body.is_playing)
-					.catch((err) => false)
 			);
 
 		/*
@@ -111,7 +120,7 @@ module.exports = class App extends Homey.App {
 			clearTimeout(this.playlistRefreshTimeout);
 			this.playlistRefreshTimeout = setTimeout(
 				() => Homey.ManagerMedia.requestPlaylistsUpdate(),
-				(Math.random() + 1) * PLAYLIST_REFRESH_TIMEOUT
+				((Math.random() - 1) * (PLAYLIST_REFRESH_TIMEOUT / 24)) + PLAYLIST_REFRESH_TIMEOUT // Set refresh timeout with some variance (+- 30 minutes)
 			);
 			if (!Homey.ManagerSettings.get('authorized')) {
 				return callback(null, []);
@@ -231,17 +240,12 @@ module.exports = class App extends Homey.App {
 			this.spotifyApi.createAuthorizeURL(scopes, state, true)
 		)
 			.on('url', url => callback(null, url))
-			.on('code', code => this.authorizeSpotify({ code }, (err) => {
-				if (!err) {
-					// Homey.ManagerMedia.requestPlaylistsUpdate(); FIXME enable
-				}
-			}))
+			.on('code', code => this.authorizeSpotify({ code }).then(() => Homey.ManagerMedia.requestPlaylistsUpdate()))
 			.generate()
 			.catch(this.error);
 	}
 
-	authorizeSpotify(credentials, callback) {
-		callback = typeof callback === 'function' ? callback : (() => null);
+	authorizeSpotify(credentials) {
 
 		if (!credentials) {
 			credentials = {
@@ -250,6 +254,7 @@ module.exports = class App extends Homey.App {
 			};
 		}
 
+		clearTimeout(this.authRetryTimeout);
 		clearTimeout(this.authorizationRefreshTimeout);
 
 		const setAuthorized = (accessToken, refreshToken, expiresIn) => {
@@ -271,31 +276,39 @@ module.exports = class App extends Homey.App {
 			this.authorizationRefreshTimeout = setTimeout(this.authorizeSpotify.bind(this), (expiresIn - 600) * 1000);
 
 			this.log('new credentials', this.spotifyApi.getCredentials());
-
-			callback(null, true);
 		};
 
 		if (credentials.code) {
-			this.spotifyApi.authorizationCodeGrant(credentials.code)
+			return this.spotifyApi.authorizationCodeGrant(credentials.code)
 				.then(data => {
 					this.log('authorized', data);
 
-					setAuthorized(data.body.access_token, data.body.refresh_token, data.body.expires_in);
-				})
-				.catch(callback);
+					return setAuthorized(data.body.access_token, data.body.refresh_token, data.body.expires_in);
+				});
 		} else if (credentials.accessToken && credentials.refreshToken) {
 			this.spotifyApi.setAccessToken(credentials.accessToken);
 			this.spotifyApi.setRefreshToken(credentials.refreshToken);
-			this.spotifyApi.refreshAccessToken()
+			return this.spotifyApi.refreshAccessToken()
 				.then(data => {
 					this.log('authorized', data);
 
-					setAuthorized(data.body.access_token, data.body.refresh_token, data.body.expires_in);
+					return setAuthorized(data.body.access_token, data.body.refresh_token, data.body.expires_in);
 				})
-				.catch(callback);
+				.catch(err => {
+					if (!this.authRetries || this.authRetries < 5) {
+						this.authRetries = (this.authRetries || 0) + 1;
+						return new Promise(res =>
+							this.authRetryTimeout = setTimeout(
+								() => res(this.authorizeSpotify(credentials)),
+								AUTH_RETRY_TIMEOUT * Math.pow(2, this.authRetries - 1)
+							)
+						);
+					}
+					return Promise.reject(err);
+				});
 		} else {
 			this.log('no credentials', credentials);
-			callback(new Error(Homey.__('error.invalid_credentials')));
+			return Promise.reject(new Error(Homey.__('error.invalid_credentials')));
 		}
 	}
 
@@ -306,8 +319,8 @@ module.exports = class App extends Homey.App {
 	 * @param callback
 	 */
 	deauthorize(callback) {
-		Homey.ManagerSettings.unset('credentials');
-		Homey.ManagerSettings.unset('username');
+		Homey.ManagerSettings.unset('accessToken');
+		Homey.ManagerSettings.unset('refreshToken');
 		Homey.ManagerSettings.set('authorized', false);
 		Homey.ManagerApi.realtime('authorized', false);
 		this.emit('authenticated', false);

@@ -9,11 +9,14 @@
 	"settings": {
 		"auth": {
 			"authorize": "Log In",
-			"deauthorize": "Log Uit"
+			"deauthorize": "Log Uit",
+			"authorize_help": "Nadat u op de \"Log In\" knop drukt zou er een popup moeten verschijnen waar u kunt inloggen. Wanneer dit niet het geval is blokkeerd uw browser popups, controleer in dat geval uw adresbalk om popups toe te staan en probeer opnieuw."
 		}
 	},
 	"error": {
 		"invalid_credentials": "Inloggegevens zijn incorrect. Probeer aub opnieuw.",
-		"not_authorized": "Je bent niet ingelogd. Controleer aub de spotify instellingen om in te loggen."
+		"not_authorized": "Je bent niet ingelogd. Controleer aub de spotify instellingen om in te loggen.",
+		"unavailable": "Kon niet verbinden met dit apparaat. Wanneer dit probleem aanhoud kunt u proberen Homey/deze app the herstarten of dit apparaat te verwijderen en opnieuw toe te voegen.",
+		"device_not_found": "Apparaat is niet gevonden. Controleer of het apparaat online is en Homey op het juiste spotify account is ingelogd."
 	}
 }

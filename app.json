@@ -77,6 +77,23 @@
 						"filter": "driver_id=connect_speaker"
 					}
 				]
+			},
+			{
+				"id": "play_playlist",
+				"title": {
+					"en": "Play Playlist",
+					"nl": "Speel Afspeellijst"
+				},
+				"args": [
+					{
+						"name": "playlist",
+						"type": "autocomplete",
+						"placeholder": {
+							"en": "Playlist...",
+							"nl": "Afspeellijst..."
+						}
+					}
+				]
 			}
 		],
 		"conditions": [

@@ -83,6 +83,29 @@ module.exports = class App extends Homey.App {
 					.then(result => result.body.is_playing)
 			);
 
+		new Homey.FlowCardAction('play_playlist')
+			.register()
+                        .registerRunListener((args, state) => {
+				return this.queue.add(() => {
+                                    return this.spotifyApi.startMyPlayback({
+                                        contextUri: args.playlist.uri
+                                    });
+                                });
+			})
+			.getArgument('playlist')
+			.registerAutocompleteListener((query, args) => {
+				query = query.toLowerCase();
+				return this.getPlayListsRecursive().then((playlists) => {
+					return playlists.filter((p) => p.name.toLowerCase().indexOf(query) > -1).map((p) => {
+						return {
+							icon: p.images.length > 0 ? p.images[0].url : null,
+							name: p.name,
+							uri: p.uri
+						};
+					});
+				});
+			});
+
 		/*
 		 * Respond to a search request by returning an array of parsed search results
 		 */

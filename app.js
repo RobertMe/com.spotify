@@ -83,6 +83,30 @@ module.exports = class App extends Homey.App {
 					.then(result => result.body.is_playing)
 			);
 
+		new Homey.FlowCardAction('spotify_play')
+			.register()
+			.registerRunListener(() =>
+				this.queue.add(() => this.spotifyApi.startMyPlayback({}))
+			);
+
+		new Homey.FlowCardAction('spotify_pause')
+			.register()
+			.registerRunListener(() =>
+				this.queue.add(() => this.spotifyApi.pauseMyPlayback({}))
+			);
+
+		new Homey.FlowCardAction('spotify_next')
+			.register()
+			.registerRunListener(() =>
+				this.queue.add(() => this.spotifyApi.skipMyPlaybackNext({}))
+			);
+
+		new Homey.FlowCardAction('spotify_previous')
+			.register()
+			.registerRunListener(() =>
+				this.queue.add(() => this.spotifyApi.skipMyPlaybackPrevious({}))
+			);
+
 		/*
 		 * Respond to a search request by returning an array of parsed search results
 		 */

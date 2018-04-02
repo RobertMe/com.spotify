@@ -94,8 +94,17 @@ module.exports = class App extends Homey.App {
 			})
 			.getArgument('playlist')
 			.registerAutocompleteListener((query, args) => {
+				if (!this.playlistLoader) {
+					this.playlistLoader = this.getPlayListsRecursive();
+
+					this.playlistLoader.then(
+						() => setTimeout(() => this.playlistLoader = null, 60*1000),
+						() => this.playlistLoader = null
+					);
+				}
+
 				query = query.toLowerCase();
-				return this.getPlayListsRecursive().then((playlists) => {
+				return this.playlistLoader.then((playlists) => {
 					return playlists.filter((p) => p.name.toLowerCase().indexOf(query) > -1).map((p) => {
 						return {
 							icon: p.images.length > 0 ? p.images[0].url : null,

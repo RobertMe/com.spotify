@@ -83,6 +83,23 @@ module.exports = class App extends Homey.App {
 					.then(result => result.body.is_playing)
 			);
 
+		new Homey.FlowCardAction('spotify_set_volume')
+			.register()
+			.registerRunListener((args) =>
+				this.queue.add(() => this.spotifyApi.setMyPlaybackVolume({volume_percent: args.volume}))
+                         );
+
+		new Homey.FlowCardAction('spotify_adjust_volume')
+			.register()
+			.registerRunListener((args) =>
+				this.queue.add(() => this.spotifyApi.getMyCurrentPlaybackState()
+					.then(result => {
+						const newVolume = Math.min(100, Math.max(0, result.body.device.volume_percent + args.adjustment))
+						return this.spotifyApi.setMyPlaybackVolume({volume_percent: newVolume});
+					})
+				)
+			);
+
 		/*
 		 * Respond to a search request by returning an array of parsed search results
 		 */

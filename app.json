@@ -77,6 +77,44 @@
 						"filter": "driver_id=connect_speaker"
 					}
 				]
+			},
+			{
+				"id": "spotify_set_volume",
+				"title": {
+					"en": "Set Volume",
+					"nl": "Zet Volume"
+				},
+				"args": [
+					{
+						"name": "volume",
+						"type": "range",
+						"min": 0,
+						"max": 100,
+						"step": 1,
+						"label": "%",
+						"labelMultiplier": 1.0,
+						"labelDecimals": 1
+					}
+				]
+			},
+			{
+				"id": "spotify_adjust_volume",
+				"title": {
+					"en": "Adjust Volume",
+					"nl": "Pas Volume Aan"
+				},
+				"args": [
+					{
+						"name": "adjustment",
+						"type": "range",
+						"min": -100,
+						"max": 100,
+						"step": 1,
+						"label": "%",
+						"labelMultiplier": 1.0,
+						"labelDecimals": 1
+					}
+				]
 			}
 		],
 		"conditions": [

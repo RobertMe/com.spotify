@@ -85,12 +85,12 @@ module.exports = class App extends Homey.App {
 
 		new Homey.FlowCardAction('play_playlist')
 			.register()
-                        .registerRunListener((args, state) => {
+			.registerRunListener((args, state) => {
 				return this.queue.add(() => {
-                                    return this.spotifyApi.startMyPlayback({
-                                        contextUri: args.playlist.uri
-                                    });
-                                });
+					return this.spotifyApi.startMyPlayback({
+						contextUri: args.playlist.uri
+					});
+				});
 			})
 			.getArgument('playlist')
 			.registerAutocompleteListener((query, args) => {
@@ -105,6 +105,23 @@ module.exports = class App extends Homey.App {
 					});
 				});
 			});
+
+		new Homey.FlowCardAction('spotify_set_volume')
+			.register()
+			.registerRunListener((args) =>
+				this.queue.add(() => this.spotifyApi.setMyPlaybackVolume({volume_percent: args.volume}))
+			);
+
+		new Homey.FlowCardAction('spotify_adjust_volume')
+			.register()
+			.registerRunListener((args) =>
+				this.queue.add(() => this.spotifyApi.getMyCurrentPlaybackState()
+					.then(result => {
+						const newVolume = Math.min(100, Math.max(0, result.body.device.volume_percent + args.adjustment))
+						return this.spotifyApi.setMyPlaybackVolume({volume_percent: newVolume});
+					})
+				)
+			);
 
 		/*
 		 * Respond to a search request by returning an array of parsed search results

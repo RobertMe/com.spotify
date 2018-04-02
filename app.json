@@ -132,6 +132,34 @@
 						"labelDecimals": 1
 					}
 				]
+			},
+			{
+				"id": "spotify_play",
+				"title": {
+					"en": "Continue playback",
+					"nl": "Ga door met afspelen"
+				}
+			},
+			{
+				"id": "spotify_pause",
+				"title": {
+					"en": "Pause",
+					"nl": "Pauzeer"
+				}
+			},
+			{
+				"id": "spotify_next",
+				"title": {
+					"en": "Play Next Song",
+					"nl": "Speel Volgende Nummer"
+				}
+			},
+			{
+				"id": "spotify_previous",
+				"title": {
+					"en": "Play Previous Song",
+					"nl": "Speel Vorige Nummer"
+				}
 			}
 		],
 		"conditions": [
